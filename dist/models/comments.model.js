@@ -1,9 +1,12 @@
 "use strict";
-const mongoose = require("mongoose");
-const validator = require("validator");
-const commentSchema = mongoose.Schema({
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const mongoose_1 = __importDefault(require("mongoose"));
+const commentSchema = new mongoose_1.default.Schema({
     postId: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: mongoose_1.default.Schema.Types.ObjectId,
         required: true,
     },
     body: {
@@ -11,5 +14,4 @@ const commentSchema = mongoose.Schema({
         required: true,
     },
 });
-const Comment = mongoose.model("Comment", commentSchema);
-module.exports = Comment;
+exports.default = mongoose_1.default.model("Comment", commentSchema);

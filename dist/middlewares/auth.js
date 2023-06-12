@@ -8,14 +8,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const jsonwebtoken_1 = require("jsonwebtoken");
-const users_model_1 = require("../models/users.model");
+const users_model_1 = __importDefault(require("../models/users.model"));
 const auth = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const token = req.header("authorization").replace("Bearer ", "");
         const decoded = (0, jsonwebtoken_1.verify)(token, process.env.JWT_SECRET);
-        const user = yield (0, users_model_1.findOne)({ _id: decoded.id }, {
+        const user = yield users_model_1.default.findOne({ _id: decoded.id }, {
             password: 0,
             __v: 0,
         });

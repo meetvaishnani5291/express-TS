@@ -1,8 +1,12 @@
 "use strict";
-const mongoose = require("mongoose");
-const postSchema = mongoose.Schema({
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const mongoose_1 = __importDefault(require("mongoose"));
+const postSchema = new mongoose_1.default.Schema({
     userId: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: mongoose_1.default.Schema.Types.ObjectId,
         required: true,
     },
     title: {
@@ -15,10 +19,9 @@ const postSchema = mongoose.Schema({
     },
 });
 postSchema.index({ body: "text", title: "text" }, {
-    weight: {
+    weights: {
         title: 10,
         body: 5,
     },
 });
-const Post = mongoose.model("Post", postSchema);
-module.exports = Post;
+exports.default = mongoose_1.default.model("Post", postSchema);

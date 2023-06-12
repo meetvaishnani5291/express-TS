@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
-import validator from "validator";
 
-const commentSchema = mongoose.Schema({
+const commentSchema = new mongoose.Schema({
   postId: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
@@ -12,6 +11,4 @@ const commentSchema = mongoose.Schema({
   },
 });
 
-const Comment = mongoose.model("Comment", commentSchema);
-
-module.exports = Comment;
+export default mongoose.model("Comment", commentSchema);

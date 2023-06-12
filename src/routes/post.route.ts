@@ -15,4 +15,4 @@ router.delete("/:id", auth, postController.deletePost);
 
 router.post("/:id/comment", auth, postController.addCommentToPost);
 
-module.exports = router;
+export default router;

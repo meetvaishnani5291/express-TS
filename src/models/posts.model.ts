@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const postSchema = mongoose.Schema({
+const postSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
@@ -18,13 +18,11 @@ const postSchema = mongoose.Schema({
 postSchema.index(
   { body: "text", title: "text" },
   {
-    weight: {
+    weights: {
       title: 10,
       body: 5,
     },
   }
 );
 
-const Post = mongoose.model("Post", postSchema);
-
-module.exports = Post;
+export default mongoose.model("Post", postSchema);

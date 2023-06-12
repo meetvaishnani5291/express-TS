@@ -1,11 +1,17 @@
 import { verify } from "jsonwebtoken";
-import { findOne as findUser } from "../models/users.model";
+import User from "../models/users.model";
+import { NextFunction, Response } from "express";
+import { CustomRequest } from "../interfaces/CustomRequest.interface";
 
-const auth = async (req, res, next) => {
+type token = {
+  id: string;
+};
+
+const auth = async (req: CustomRequest, res: Response, next: NextFunction) => {
   try {
-    const token = req.header("authorization").replace("Bearer ", "");
-    const decoded = verify(token, process.env.JWT_SECRET);
-    const user = await findUser(
+    const token: string = req.header("authorization")!.replace("Bearer ", "");
+    const decoded = verify(token, process.env.JWT_SECRET as string) as token;
+    const user = await User.findOne(
       { _id: decoded.id },
       {
         password: 0,

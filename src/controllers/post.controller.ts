@@ -1,29 +1,31 @@
-import { assert, string, ValidationError } from "joi";
-import { default as mongoose } from "mongoose";
-
-import {
-  countDocuments,
-  find,
-  aggregate,
-  create,
-  findOne,
-  findById,
-} from "../models/posts.model";
-import { create as createComment } from "../models/comments.model";
+import Joi, { assert, ValidationError } from "joi";
+import mongoose from "mongoose";
+import Post from "../models/posts.model";
+import Comment from "../models/comments.model";
 import {
   postValidationSchema,
   commentValidationSchema,
 } from "../utils/validation";
+import { NextFunction, Request, Response } from "express";
+import {
+  CustomQuery,
+  CustomRequest,
+} from "../interfaces/CustomRequest.interface";
 
-const fetchAllPosts = async (req, res, next) => {
+const fetchAllPosts = async (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const pageno = parseInt(req.query.pageno) || 1;
-    const itemsPerPage = parseInt(req.query.itemsPerPage) || 10;
-
+    const { pageno: _pageno, itemsPerPage: _itemsPerPage } =
+      req.query as CustomQuery;
+    const pageno = parseInt(_pageno!) || 1;
+    const itemsPerPage = parseInt(_itemsPerPage!) || 10;
     const skip = (pageno - 1) * itemsPerPage;
 
-    const totalPosts = await countDocuments();
-    const posts = await find().skip(skip).limit(itemsPerPage);
+    const totalPosts = await Post.countDocuments();
+    const posts = await Post.find().skip(skip).limit(itemsPerPage);
 
     if (posts.length === 0)
       return res.status(404).json({ error: "posts not found!" });
@@ -38,16 +40,22 @@ const fetchAllPosts = async (req, res, next) => {
   }
 };
 
-const fetchPostById :  = async (req, res, next) => {
+const fetchPostById = async (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const postId = req.params.id;
-    assert(postId, string().hex().length(24));
+    assert(postId, Joi.string().hex().length(24));
 
-    const pageno = parseInt(req.query.pageno) || 1;
-    const itemsPerPage = parseInt(req.query.itemsPerPage) || 10;
+    const { pageno: _pageno, itemsPerPage: _itemsPerPage } =
+      req.query as CustomQuery;
+    const pageno = parseInt(_pageno!) || 1;
+    const itemsPerPage = parseInt(_itemsPerPage!) || 10;
     const skip = (pageno - 1) * itemsPerPage;
 
-    const post = await aggregate([
+    const post = await Post.aggregate([
       {
         $match: {
           _id: new mongoose.Types.ObjectId(postId),
@@ -141,13 +149,17 @@ const fetchPostById :  = async (req, res, next) => {
   }
 };
 
-const searchPost = async (req, res, next) => {
+const searchPost = async (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const keyword = req.query.keyword;
-    assert(keyword, string().required());
+    const { keyword } = req.query as CustomQuery;
+    assert(keyword, Joi.string().required());
 
-    const posts = await aggregate([
-      { $match: { $text: { $search: keyword } } },
+    const posts = await Post.aggregate([
+      { $match: { $text: { $search: keyword! } } },
       {
         $addFields: {
           score: { $meta: "textScore" },
@@ -189,14 +201,18 @@ const searchPost = async (req, res, next) => {
     next(err);
   }
 };
-const addPost = async (req, res, next) => {
+const addPost = async (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const newPost = req.body;
-    newPost.userId = req.user._id;
+    newPost.userId = req.user!._id;
 
     assert({ ...newPost }, postValidationSchema);
 
-    const post = await create(newPost);
+    const post = await Post.create(newPost);
     res.status(201).json(post);
   } catch (err) {
     if (err instanceof ValidationError)
@@ -205,13 +221,17 @@ const addPost = async (req, res, next) => {
   }
 };
 
-const deletePost = async (req, res, next) => {
+const deletePost = async (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const postId = req.params.id;
-    assert(postId, string().hex().length(24));
+    assert(postId, Joi.string().hex().length(24));
 
-    const post = await findOne({
-      userId: req.user._id,
+    const post = await Post.findOne({
+      userId: req.user!._id,
       _id: new mongoose.Types.ObjectId(postId),
     });
     if (!post) return res.status(404).json({ error: "post not found!" });
@@ -224,22 +244,26 @@ const deletePost = async (req, res, next) => {
   }
 };
 
-const addCommentToPost = async (req, res, next) => {
+const addCommentToPost = async (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const postId = req.params.id;
-    assert(postId, string().hex().length(24));
-    const post = await findById(new mongoose.Types.ObjectId(postId));
+    assert(postId, Joi.string().hex().length(24));
+    const post = await Post.findById(new mongoose.Types.ObjectId(postId));
 
     if (!post) {
       return res.status(404).json({ error: "Post not found!" });
     }
 
     const newComment = req.body;
-    newComment.userId = req.user._id;
+    newComment.userId = req.user!._id;
     newComment.postId = post._id;
     assert({ ...newComment }, commentValidationSchema);
 
-    const comment = await createComment(newComment);
+    const comment = await Comment.create(newComment);
 
     res.status(200).json(comment);
   } catch (err) {

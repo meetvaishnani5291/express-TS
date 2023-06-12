@@ -14,16 +14,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const joi_1 = require("joi");
 const mongoose_1 = __importDefault(require("mongoose"));
-const posts_model_1 = require("../models/posts.model");
-const comments_model_1 = require("../models/comments.model");
+const posts_model_1 = __importDefault(require("../models/posts.model"));
+const comments_model_1 = __importDefault(require("../models/comments.model"));
 const validation_1 = require("../utils/validation");
 const fetchAllPosts = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const pageno = parseInt(req.query.pageno) || 1;
-        const itemsPerPage = parseInt(req.query.itemsPerPage) || 10;
+        const { pageno: _pageno, itemsPerPage: _itemsPerPage } = req.query;
+        const pageno = parseInt(_pageno) || 1;
+        const itemsPerPage = parseInt(_itemsPerPage) || 10;
         const skip = (pageno - 1) * itemsPerPage;
-        const totalPosts = yield (0, posts_model_1.countDocuments)();
-        const posts = yield (0, posts_model_1.find)().skip(skip).limit(itemsPerPage);
+        const totalPosts = yield posts_model_1.default.countDocuments();
+        const posts = yield posts_model_1.default.find().skip(skip).limit(itemsPerPage);
         if (posts.length === 0)
             return res.status(404).json({ error: "posts not found!" });
         res.status(200).json({
@@ -40,10 +41,11 @@ const fetchPostById = (req, res, next) => __awaiter(void 0, void 0, void 0, func
     try {
         const postId = req.params.id;
         (0, joi_1.assert)(postId, (0, joi_1.string)().hex().length(24));
-        const pageno = parseInt(req.query.pageno) || 1;
-        const itemsPerPage = parseInt(req.query.itemsPerPage) || 10;
+        const { pageno: _pageno, itemsPerPage: _itemsPerPage } = req.query;
+        const pageno = parseInt(_pageno) || 1;
+        const itemsPerPage = parseInt(_itemsPerPage) || 10;
         const skip = (pageno - 1) * itemsPerPage;
-        const post = yield (0, posts_model_1.aggregate)([
+        const post = yield posts_model_1.default.aggregate([
             {
                 $match: {
                     _id: new mongoose_1.default.Types.ObjectId(postId),
@@ -139,9 +141,9 @@ const fetchPostById = (req, res, next) => __awaiter(void 0, void 0, void 0, func
 });
 const searchPost = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const keyword = req.query.keyword;
+        const { keyword } = req.query;
         (0, joi_1.assert)(keyword, (0, joi_1.string)().required());
-        const posts = yield (0, posts_model_1.aggregate)([
+        const posts = yield posts_model_1.default.aggregate([
             { $match: { $text: { $search: keyword } } },
             {
                 $addFields: {
@@ -189,7 +191,7 @@ const addPost = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
         const newPost = req.body;
         newPost.userId = req.user._id;
         (0, joi_1.assert)(Object.assign({}, newPost), validation_1.postValidationSchema);
-        const post = yield (0, posts_model_1.create)(newPost);
+        const post = yield posts_model_1.default.create(newPost);
         res.status(201).json(post);
     }
     catch (err) {
@@ -202,7 +204,7 @@ const deletePost = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
     try {
         const postId = req.params.id;
         (0, joi_1.assert)(postId, (0, joi_1.string)().hex().length(24));
-        const post = yield (0, posts_model_1.findOne)({
+        const post = yield posts_model_1.default.findOne({
             userId: req.user._id,
             _id: new mongoose_1.default.Types.ObjectId(postId),
         });
@@ -221,7 +223,7 @@ const addCommentToPost = (req, res, next) => __awaiter(void 0, void 0, void 0, f
     try {
         const postId = req.params.id;
         (0, joi_1.assert)(postId, (0, joi_1.string)().hex().length(24));
-        const post = yield (0, posts_model_1.findById)(new mongoose_1.default.Types.ObjectId(postId));
+        const post = yield posts_model_1.default.findById(new mongoose_1.default.Types.ObjectId(postId));
         if (!post) {
             return res.status(404).json({ error: "Post not found!" });
         }
@@ -229,7 +231,7 @@ const addCommentToPost = (req, res, next) => __awaiter(void 0, void 0, void 0, f
         newComment.userId = req.user._id;
         newComment.postId = post._id;
         (0, joi_1.assert)(Object.assign({}, newComment), validation_1.commentValidationSchema);
-        const comment = yield (0, comments_model_1.create)(newComment);
+        const comment = yield comments_model_1.default.create(newComment);
         res.status(200).json(comment);
     }
     catch (err) {

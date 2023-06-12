@@ -5,10 +5,13 @@ import swaggerJsdoc from "swagger-jsdoc";
 
 import app from "./express/app";
 
-const ENVIRONMENT = process.env.ENVIRONMENT;
-const PORT = process.env.SERVER_PORT;
-const HOST = process.env.SERVER_HOST;
-const DATABASE_CONNECTION_STRING = `mongodb://${process.env.DATABASE_HOST}:${process.env.DATABASE_PORT}/${process.env.DATABASE_NAME}`;
+const ENVIRONMENT = process.env.ENVIRONMENT || "devlopment";
+const PORT = process.env.SERVER_PORT || 3002;
+const HOST = process.env.SERVER_HOST || "localhost";
+const DATABASE_HOST = process.env.DATABASE_HOST || "localhost";
+const DATABASE_PORT = +process.env.DATABASE_PORT! || 27017;
+const DATABASE_NAME = process.env.DATABASE_NAME || "UserPostDB2";
+const DATABASE_CONNECTION_STRING = `mongodb://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}`;
 
 async function assertDatabaseConnectionOk() {
   console.log(chalk.bgCyan.bold(`Checking database connection...`));
@@ -18,13 +21,13 @@ async function assertDatabaseConnectionOk() {
     console.log(chalk.bgGreen.bold("Database connection OK!"));
   } catch (error) {
     console.log(chalk.bgRed("Unable to connect to the database:"));
-    console.log(chalk.bgRed(error.message));
+    console.log(chalk.bgRed((error as Error).message));
     process.exit(1);
   }
 }
 async function setupConfig() {
   const swaggerOptions = {
-    swaggerDefinition: require("./swagger/swagger.json"),
+    swaggerDefinition: require("../swagger/swagger.json"),
     apis: ["app.js"],
   };
 

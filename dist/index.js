@@ -8,26 +8,33 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const mongoose = require("mongoose");
-const chalk = require("chalk");
-const swaggerUi = require("swagger-ui-express");
-const swaggerJsdoc = require("swagger-jsdoc");
-const app = require("./express/app");
-const ENVIRONMENT = process.env.ENVIRONMENT;
-const PORT = process.env.SERVER_PORT;
-const HOST = process.env.SERVER_HOST;
-const DATABASE_CONNECTION_STRING = `mongodb://${process.env.DATABASE_HOST}:${process.env.DATABASE_PORT}/${process.env.DATABASE_NAME}`;
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const mongoose_1 = __importDefault(require("mongoose"));
+const chalk_1 = __importDefault(require("chalk"));
+const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
+const swagger_jsdoc_1 = __importDefault(require("swagger-jsdoc"));
+const app_1 = __importDefault(require("./express/app"));
+const ENVIRONMENT = process.env.ENVIRONMENT || "devlopment";
+const PORT = process.env.SERVER_PORT || 3002;
+const HOST = process.env.SERVER_HOST || "localhost";
+const DATABASE_HOST = process.env.DATABASE_HOST || "localhost";
+const DATABASE_PORT = process.env.DATABASE_PORT || 27017;
+const DATABASE_NAME = process.env.DATABASE_NAME || "UserPostDB2";
+const DATABASE_CONNECTION_STRING = `mongodb://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}`;
 function assertDatabaseConnectionOk() {
     return __awaiter(this, void 0, void 0, function* () {
-        console.log(chalk.bgCyan.bold(`Checking database connection...`));
+        console.log(chalk_1.default.bgCyan.bold(`Checking database connection...`));
         try {
-            mongoose.set("debug", true);
-            yield mongoose.connect(DATABASE_CONNECTION_STRING);
-            console.log(chalk.bgGreen.bold("Database connection OK!"));
+            mongoose_1.default.set("debug", true);
+            yield mongoose_1.default.connect(DATABASE_CONNECTION_STRING);
+            console.log(chalk_1.default.bgGreen.bold("Database connection OK!"));
         }
         catch (error) {
-            console.log(chalk.bgRed("Unable to connect to the database:"));
-            console.log(chalk.bgRed(error.message));
+            console.log(chalk_1.default.bgRed("Unable to connect to the database:"));
+            console.log(chalk_1.default.bgRed(error.message));
             process.exit(1);
         }
     });
@@ -35,11 +42,11 @@ function assertDatabaseConnectionOk() {
 function setupConfig() {
     return __awaiter(this, void 0, void 0, function* () {
         const swaggerOptions = {
-            swaggerDefinition: require("./swagger/swagger.json"),
+            swaggerDefinition: require("../swagger/swagger.json"),
             apis: ["app.js"],
         };
-        const swaggerSpec = swaggerJsdoc(swaggerOptions);
-        app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+        const swaggerSpec = (0, swagger_jsdoc_1.default)(swaggerOptions);
+        app_1.default.use("/api-docs", swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swaggerSpec));
     });
 }
 function init() {
@@ -47,9 +54,9 @@ function init() {
         yield assertDatabaseConnectionOk();
         if (ENVIRONMENT === "devlopment")
             setupConfig();
-        console.log(chalk.bgCyan.bold(`Starting Express server on port ${PORT}...`));
-        app.listen(PORT, () => {
-            console.log(chalk.bgGreen.bold(`Express server started on port ${PORT}`));
+        console.log(chalk_1.default.bgCyan.bold(`Starting Express server on port ${PORT}...`));
+        app_1.default.listen(PORT, () => {
+            console.log(chalk_1.default.bgGreen.bold(`Express server started on port ${PORT}`));
         });
     });
 }

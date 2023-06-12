@@ -11,4 +11,4 @@ router.post("/", userController.addUser);
 
 router.delete("/", auth, userController.deleteUser);
 
-module.exports = router;
+export default router;

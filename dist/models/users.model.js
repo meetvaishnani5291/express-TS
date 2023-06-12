@@ -8,11 +8,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const mongoose = require("mongoose");
-const validator = require("validator");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const userSchema = mongoose.Schema({
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.userSchema = void 0;
+const mongoose_1 = __importDefault(require("mongoose"));
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const validator_1 = __importDefault(require("validator"));
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+exports.userSchema = new mongoose_1.default.Schema({
     username: {
         type: String,
         required: true,
@@ -26,7 +31,7 @@ const userSchema = mongoose.Schema({
         lowercase: true,
         unique: true,
         validate: (value) => {
-            if (!validator.isEmail(value))
+            if (!validator_1.default.isEmail(value))
                 throw new Error("email is not valid!");
         },
     },
@@ -41,22 +46,22 @@ const userSchema = mongoose.Schema({
         },
     },
 });
-userSchema.methods.generateAuthToken = function () {
+exports.userSchema.methods.generateAuthToken = function () {
     return __awaiter(this, void 0, void 0, function* () {
         const user = this;
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+        const SECRET = process.env.JWT_SECRET ? process.env.JWT_SECRET : "secret";
+        const token = jsonwebtoken_1.default.sign({ id: user._id }, SECRET, {
             expiresIn: "1d",
         });
         return token;
     });
 };
-userSchema.pre("save", function (next) {
+exports.userSchema.pre("save", function (next) {
     return __awaiter(this, void 0, void 0, function* () {
         const user = this;
         if (user.isModified("password"))
-            user.password = yield bcrypt.hash(user.password, 10);
+            user.password = yield bcryptjs_1.default.hash(user.password, 10);
         next();
     });
 });
-const User = mongoose.model("User", userSchema);
-module.exports = User;
+exports.default = mongoose_1.default.model("User", exports.userSchema);
